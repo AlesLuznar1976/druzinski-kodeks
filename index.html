@@ -52,7 +52,7 @@
   .msg{padding:10px 12px;border-radius:10px;background:var(--soft);margin:10px 0;font-size:.95rem}
   .msg.warn{background:#fff4e5;color:var(--warn)}
   .pin{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .pin input{max-width:160px;letter-spacing:.3em;font-size:1.2rem;text-align:center}
+  .pin input{max-width:160px;letter-spacing:.3em;font-size:1.2rem;text-align:center;text-transform:lowercase}
   nav.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
   nav.tabs button{background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font:inherit;cursor:pointer}
   nav.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -79,13 +79,12 @@
   <!-- PRIJAVA -->
   <section id="login" class="card">
     <h2>Kdo si?</h2>
-    <p class="lead">Izberi svoje ime in vpiši svoj PIN (4 številke). Ob prvi prijavi na tej napravi si PIN sam/a izbereš.</p>
+    <p class="lead">Izberi svoje ime in vpiši svoj PIN (dobil/a si ga od Aleša).</p>
     <div class="people" id="people"></div>
     <div id="pinbox" class="hidden">
       <label class="q" id="pinlabel">PIN</label>
       <div class="pin">
-        <input type="password" id="pin1" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
-        <input type="password" id="pin2" inputmode="numeric" maxlength="4" placeholder="ponovi" autocomplete="off" class="hidden">
+        <input type="password" id="pin1" maxlength="4" placeholder="••••" autocomplete="off" autocapitalize="off">
         <button class="btn" id="loginBtn">Prijava</button>
       </div>
       <div id="loginMsg"></div>
@@ -155,10 +154,10 @@
 <script>
 // ---------- podatki ----------
 const PEOPLE = [
-  {id:'ales',    name:'Aleš',    age:50, emoji:'👨'},
-  {id:'martina', name:'Martina', age:40, emoji:'👩'},
-  {id:'ziva',    name:'Živa',    age:19, emoji:'👧'},
-  {id:'ema',     name:'Ema',     age:16, emoji:'👧'},
+  {id:'ales',    name:'Aleš',    age:50, emoji:'👨', pin:'ca1b5bae6727477a92b2d2a8143b938bd5375eb02612e1a0db34de45ea4671b0'},
+  {id:'martina', name:'Martina', age:40, emoji:'👩', pin:'06f80e230d90cfc99473be2b5349da527ed99b6219bb229ad1933fa1054f9e03'},
+  {id:'ziva',    name:'Živa',    age:19, emoji:'👧', pin:'51955f7ba1d13cfe456c5f6aee4e2623ff3cf7a6e635f3f13b47de18c81d54fe'},
+  {id:'ema',     name:'Ema',     age:16, emoji:'👧', pin:'9422ec8161a0aed8b927ad431a8b92ab0396fc0a1b1db0ba5f9c0819e24aa12c'},
 ];
 const MAIL_TO = 'alesluznar@gmail.com';
 
@@ -231,27 +230,21 @@ function renderPeople(){
   document.querySelectorAll('.person').forEach(el=>el.onclick=()=>{
     selected = PEOPLE.find(p=>p.id===el.dataset.id);
     document.querySelectorAll('.person').forEach(x=>x.classList.toggle('sel',x===el));
-    const has = !!LS.get('pin_'+selected.id);
     $('#pinbox').classList.remove('hidden');
-    $('#pin2').classList.toggle('hidden',has);
-    $('#pinlabel').textContent = has ? `PIN za ${selected.name}` : `${selected.name}, izberi si PIN (4 številke) – še nimaš PIN-a na tej napravi`;
-    $('#loginMsg').innerHTML=''; $('#pin1').value=''; $('#pin2').value=''; $('#pin1').focus();
+    $('#pinlabel').textContent = `PIN za ${selected.name}`;
+    $('#loginMsg').innerHTML=''; $('#pin1').value=''; $('#pin1').focus();
   });
 }
 $('#loginBtn').onclick = async ()=>{
   if(!selected) return;
-  const p1=$('#pin1').value.trim(), p2=$('#pin2').value.trim();
-  if(!/^\d{4}$/.test(p1)){ $('#loginMsg').innerHTML='<div class="msg warn">PIN mora imeti 4 številke.</div>'; return; }
-  const saved = LS.get('pin_'+selected.id);
-  if(!saved){
-    if(p1!==p2){ $('#loginMsg').innerHTML='<div class="msg warn">PIN-a se ne ujemata.</div>'; return; }
-    LS.set('pin_'+selected.id, await hash(p1));
-  } else if(saved !== await hash(p1)){
-    $('#loginMsg').innerHTML='<div class="msg warn">Napačen PIN.</div>'; return;
+  const p1=$('#pin1').value.trim().toLowerCase();
+  if(!p1){ $('#loginMsg').innerHTML='<div class="msg warn">Vpiši PIN.</div>'; return; }
+  if(selected.pin !== await hash(p1)){
+    $('#loginMsg').innerHTML='<div class="msg warn">Napačen PIN.</div>'; $('#pin1').value=''; $('#pin1').focus(); return;
   }
   login(selected);
 };
-['#pin1','#pin2'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()}));
+$('#pin1').addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()});
 
 function login(p){
   me=p; answers = LS.get('ans_'+me.id, {});
