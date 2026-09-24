@@ -109,10 +109,11 @@
       <form id="form" class="card" autocomplete="off"></form>
       <div class="card" id="submitCard">
         <h2>Oddaja</h2>
-        <p class="lead">Ko končaš, pošlji odgovore Alešu. Odpre se e-poštni program s pripravljenim sporočilom; če se ne odpre, uporabi gumb <b>Kopiraj</b> in odgovore prilepi v sporočilo ali WhatsApp.</p>
+        <p class="lead" id="submitLead">Ko končaš, klikni <b>Shrani odgovore</b>. Odgovori se shranijo na GitHub, kjer jih Aleš prebere. Lahko jih oddaš večkrat – šteje zadnja oddaja.</p>
         <div id="submitMsg"></div>
         <div class="row">
-          <button class="btn" id="mailBtn">✉️ Pošlji po e-pošti</button>
+          <button class="btn" id="saveBtn">💾 Shrani odgovore</button>
+          <button class="btn sec" id="mailBtn">✉️ Pošlji po e-pošti</button>
           <button class="btn sec" id="copyBtn">📋 Kopiraj odgovore</button>
           <button class="btn sec" id="dlBtn">⬇️ Prenesi datoteko</button>
           <button class="btn sec" id="clearBtn" style="margin-left:auto;color:var(--warn);border-color:var(--warn)">Izbriši moje odgovore</button>
@@ -160,6 +161,8 @@ const PEOPLE = [
   {id:'ema',     name:'Ema',     age:16, emoji:'👧', pin:'9422ec8161a0aed8b927ad431a8b92ab0396fc0a1b1db0ba5f9c0819e24aa12c'},
 ];
 const MAIL_TO = 'alesluznar@gmail.com';
+// URL posrednika (Google Apps Script), ki odgovore shrani na GitHub. Prazno = samo e-pošta.
+const SAVE_URL = '';
 
 const CHORES = ['Kuhanje','Pomivanje / pomivalni stroj','Sesanje in pometanje','Brisanje prahu','Pranje in zlaganje perila','Likanje','Nakupovanje','Odnašanje smeti','Čiščenje kopalnice in WC','Vrt in okolica hiše','Skrb za živali','Pospravljanje skupnih prostorov'];
 
@@ -302,12 +305,31 @@ function updateProgress(){
 // ---------- oddaja ----------
 function fmt(v){return Array.isArray(v)?v.join(', '):(v??'')}
 function payload(){ return {kodeks:1, id:me.id, name:me.name, age:me.age, date:new Date().toISOString().slice(0,10), answers:Object.fromEntries(ALLQ.map(q=>[q.id,answers[q.id]??'']))}; }
-function asText(){
-  let n=0, out=`DRUŽINSKI KODEKS – odgovori: ${me.name} (${me.age}), ${new Date().toLocaleDateString('sl-SI')}\n\n`;
-  for(const s of SECTIONS){ out+=`== ${s.t} ==\n`; for(const q of s.q){ n++; out+=`${n}. ${q.t}\n   → ${fmt(answers[q.id])||'—'}\n`; } out+='\n'; }
-  out += `--- Za pregled na spletni strani prilepi ta blok: ---\n`+JSON.stringify(payload());
+function readable(){
+  let n=0, out=`# Družinski kodeks – odgovori: ${me.name} (${me.age})\n\nDatum: ${new Date().toLocaleDateString('sl-SI')}\n\n`;
+  for(const s of SECTIONS){ out+=`## ${s.t}\n\n`; for(const q of s.q){ n++; out+=`**${n}. ${q.t}**\n${fmt(answers[q.id])||'—'}\n\n`; } }
   return out;
 }
+function asText(){
+  return readable() + `\n--- Za pregled na spletni strani prilepi ta blok: ---\n`+JSON.stringify(payload());
+}
+async function save(){
+  checkDone();
+  if(!SAVE_URL){ $('#submitMsg').innerHTML+='<div class="msg warn">Samodejno shranjevanje še ni vklopljeno – uporabi e-pošto ali kopiranje.</div>'; return; }
+  const btn=$('#saveBtn'); btn.disabled=true; btn.textContent='Shranjujem …';
+  try{
+    const body = Object.assign(payload(), {text: readable()});
+    const r = await fetch(SAVE_URL, {method:'POST', body: JSON.stringify(body)});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error||'napaka');
+    answers._saved = new Date().toISOString(); LS.set('ans_'+me.id, answers);
+    $('#submitMsg').innerHTML = `<div class="msg">✅ Odgovori so shranjeni (${new Date().toLocaleString('sl-SI')}). Hvala, ${me.name}!</div>`;
+  }catch(e){
+    $('#submitMsg').innerHTML = `<div class="msg warn">Shranjevanje ni uspelo (${e.message}). Poskusi znova ali uporabi gumb za e-pošto.</div>`;
+  }
+  btn.disabled=false; btn.textContent='💾 Shrani odgovore';
+}
+$('#saveBtn').onclick=save;
 function checkDone(){
   const missing = ALLQ.filter(q=>!answered(answers,q)).length;
   $('#submitMsg').innerHTML = missing ? `<div class="msg warn">Neodgovorjenih vprašanj: ${missing}. Lahko oddaš tudi tako, a bolje je, če odgovoriš na vsa.</div>` : `<div class="msg">Vsa vprašanja so odgovorjena. 🎉</div>`;
