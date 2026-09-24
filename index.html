@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Družinski kodeks – vprašalnik</title>
+<meta name="description" content="Vprašalnik za pripravo družinskega kodeksa družine Luznar.">
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1f2933; --muted:#6b7280; --line:#e5e1d8;
+    --accent:#2f6f5e; --accent-ink:#ffffff; --soft:#e8f1ee; --warn:#b45309; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  header{background:var(--accent);color:var(--accent-ink);padding:18px 16px}
+  header .wrap{max-width:820px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:1.25rem;font-weight:700}
+  header .who{font-size:.95rem;opacity:.95;display:flex;gap:10px;align-items:center}
+  header button{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 10px;cursor:pointer}
+  main{max-width:820px;margin:0 auto;padding:20px 16px 80px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  h2{font-size:1.1rem;margin:0 0 6px}
+  h3{font-size:1rem;margin:22px 0 8px;color:var(--accent)}
+  p.lead{color:var(--muted);margin:0 0 14px}
+  .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
+  .person{border:2px solid var(--line);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:#fff;transition:.15s}
+  .person:hover{border-color:var(--accent)}
+  .person.sel{border-color:var(--accent);background:var(--soft)}
+  .person .n{font-weight:700;font-size:1.05rem}
+  .person .a{color:var(--muted);font-size:.9rem}
+  label.q{display:block;font-weight:600;margin:18px 0 6px}
+  .hint{color:var(--muted);font-size:.88rem;margin:-2px 0 8px}
+  input[type=text],input[type=password],textarea,select{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  textarea{min-height:80px;resize:vertical}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .opts{display:flex;flex-direction:column;gap:6px}
+  .opts.inline{flex-direction:row;flex-wrap:wrap;gap:8px}
+  .opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+  .opt:has(input:checked){border-color:var(--accent);background:var(--soft)}
+  .opt input{accent-color:var(--accent);margin:0}
+  .scale{display:flex;gap:6px;flex-wrap:wrap}
+  .scale .opt{flex:1;justify-content:center;min-width:44px}
+  .scale-lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-top:4px}
+  .btn{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:600;cursor:pointer}
+  .btn.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .progress{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}
+  .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);width:0;transition:.3s}
+  .progress small{color:var(--muted)}
+  .msg{padding:10px 12px;border-radius:10px;background:var(--soft);margin:10px 0;font-size:.95rem}
+  .msg.warn{background:#fff4e5;color:var(--warn)}
+  .pin{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pin input{max-width:160px;letter-spacing:.3em;font-size:1.2rem;text-align:center}
+  nav.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  nav.tabs button{background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font:inherit;cursor:pointer}
+  nav.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}
+  th{background:var(--soft);position:sticky;top:0}
+  td.q{font-weight:600;background:#faf9f6;min-width:160px}
+  .tablewrap{overflow-x:auto}
+  pre{white-space:pre-wrap;word-break:break-word;background:#faf9f6;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:.85rem}
+  .hidden{display:none!important}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}
+  @media (max-width:520px){ .scale .opt{min-width:38px;padding:8px 6px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🏡 Družinski kodeks – vprašalnik</h1>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+
+<main>
+  <!-- PRIJAVA -->
+  <section id="login" class="card">
+    <h2>Kdo si?</h2>
+    <p class="lead">Izberi svoje ime in vpiši svoj PIN (4 številke). Ob prvi prijavi na tej napravi si PIN sam/a izbereš.</p>
+    <div class="people" id="people"></div>
+    <div id="pinbox" class="hidden">
+      <label class="q" id="pinlabel">PIN</label>
+      <div class="pin">
+        <input type="password" id="pin1" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+        <input type="password" id="pin2" inputmode="numeric" maxlength="4" placeholder="ponovi" autocomplete="off" class="hidden">
+        <button class="btn" id="loginBtn">Prijava</button>
+      </div>
+      <div id="loginMsg"></div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <nav class="tabs">
+      <button data-tab="form" class="on">📝 Vprašalnik</button>
+      <button data-tab="review">📊 Pregled odgovorov</button>
+      <button data-tab="about">ℹ️ O kodeksu</button>
+    </nav>
+
+    <!-- VPRAŠALNIK -->
+    <section id="tab-form">
+      <div class="progress"><div class="bar"><i id="barfill"></i></div><small id="bartxt">0 %</small></div>
+      <div class="card">
+        <h2>Navodila</h2>
+        <p class="lead">Ni pravilnih ali napačnih odgovorov. Odgovarjaj iskreno – to je osnova, da se skupaj dogovorimo, kako želimo živeti. Odgovori se sproti shranjujejo na tej napravi; lahko prekineš in nadaljuješ kasneje.</p>
+      </div>
+      <form id="form" class="card" autocomplete="off"></form>
+      <div class="card" id="submitCard">
+        <h2>Oddaja</h2>
+        <p class="lead">Ko končaš, pošlji odgovore Alešu. Odpre se e-poštni program s pripravljenim sporočilom; če se ne odpre, uporabi gumb <b>Kopiraj</b> in odgovore prilepi v sporočilo ali WhatsApp.</p>
+        <div id="submitMsg"></div>
+        <div class="row">
+          <button class="btn" id="mailBtn">✉️ Pošlji po e-pošti</button>
+          <button class="btn sec" id="copyBtn">📋 Kopiraj odgovore</button>
+          <button class="btn sec" id="dlBtn">⬇️ Prenesi datoteko</button>
+          <button class="btn sec" id="clearBtn" style="margin-left:auto;color:var(--warn);border-color:var(--warn)">Izbriši moje odgovore</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREGLED -->
+    <section id="tab-review" class="hidden">
+      <div class="card">
+        <h2>Pregled odgovorov</h2>
+        <p class="lead">Tu se prikažejo vsi odgovori, shranjeni na tej napravi. Odgovore, ki si jih prejel/a po e-pošti, prilepi spodaj (blok, ki se začne z <code>{"kodeks"</code>) in klikni <b>Dodaj</b>.</p>
+        <textarea id="pasteBox" placeholder='Prilepi prejeti blok odgovorov ...'></textarea>
+        <div class="row"><button class="btn" id="pasteBtn">Dodaj prilepljene odgovore</button><button class="btn sec" id="refreshBtn">Osveži</button></div>
+        <div id="reviewMsg"></div>
+      </div>
+      <div class="card tablewrap" id="reviewTable"></div>
+    </section>
+
+    <!-- O KODEKSU -->
+    <section id="tab-about" class="hidden">
+      <div class="card">
+        <h2>Kaj je družinski kodeks?</h2>
+        <p>Družinski kodeks je dogovor, ki ga družina napiše <b>skupaj</b>. V njem zapišemo, kako želimo živeti pod isto streho: kdo kaj pospravlja in kuha, kako preživljamo skupni čas, kako se pogovarjamo in rešujemo prepire, kaj je komu zasebno in kaj naredimo, če se dogovora ne držimo.</p>
+        <p>Kodeks deluje samo, če:</p>
+        <ul>
+          <li>ga pišejo vsi člani in ima vsak pravi glas – tudi otroci,</li>
+          <li>pravila veljajo za vse, tudi za starše,</li>
+          <li>so pravila konkretna in pozitivno napisana ("za sabo pospravim krožnik"),</li>
+          <li>ga redno pregledamo in popravimo (npr. vsake pol leta).</li>
+        </ul>
+        <p>Ta vprašalnik je prvi korak: vsak pove, kaj mu je pomembno. Nato na družinskem sestanku odgovore primerjamo in napišemo kodeks.</p>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>Družina Luznar · 2026</footer>
+
+<script>
+// ---------- podatki ----------
+const PEOPLE = [
+  {id:'ales',    name:'Aleš',    age:50, emoji:'👨'},
+  {id:'martina', name:'Martina', age:40, emoji:'👩'},
+  {id:'ziva',    name:'Živa',    age:19, emoji:'👧'},
+  {id:'ema',     name:'Ema',     age:16, emoji:'👧'},
+];
+const MAIL_TO = 'alesluznar@gmail.com';
+
+const CHORES = ['Kuhanje','Pomivanje / pomivalni stroj','Sesanje in pometanje','Brisanje prahu','Pranje in zlaganje perila','Likanje','Nakupovanje','Odnašanje smeti','Čiščenje kopalnice in WC','Vrt in okolica hiše','Skrb za živali','Pospravljanje skupnih prostorov'];
+
+const SECTIONS = [
+ {t:'A. Vrednote in splošno', q:[
+  {id:'vrednote', t:'Izberi največ 3 vrednote, ki so ti v naši družini najpomembnejše.', type:'check', max:3,
+   o:['Spoštovanje','Poštenost','Zaupanje','Humor in sproščenost','Svoboda','Red in urejenost','Skupni čas','Podpora drug drugemu','Mir doma','Odgovornost']},
+  {id:'deluje', t:'Kaj v naši družini že deluje dobro?', type:'text'},
+  {id:'spremeni', t:'Kaj bi najraje spremenil/a?', type:'text'},
+ ]},
+ {t:'B. Gospodinjstvo in opravila', q:[
+  {id:'rad', t:'Katera opravila opravljaš rad/a (ali ti vsaj niso odveč)?', type:'check', o:CHORES},
+  {id:'sovrazim', t:'Katera opravila najbolj sovražiš?', type:'check', o:CHORES},
+  {id:'ure', t:'Koliko časa na teden se ti zdi pošteno, da vsak član prispeva k gospodinjstvu?', type:'radio', o:['Manj kot 2 uri','2–4 ure','4–6 ur','Več kot 6 ur','Odvisno od obveznosti (šola, služba)']},
+  {id:'delitev', t:'Kako naj se opravila delijo?', type:'radio', o:['Vsak ima stalne zadolžitve','Tedenska rotacija','Kdor ima čas','Dogovor na tedenskem sestanku']},
+  {id:'posteno', t:'Kako pošteno je delo trenutno razdeljeno?', type:'scale', lo:'zelo nepošteno', hi:'zelo pošteno'},
+  {id:'moje_delo', t:'Koliko ur na teden po tvoji oceni ti prispevaš?', type:'radio', o:['Manj kot 1','1–3','3–6','Več kot 6']},
+  {id:'pospravljeno', t:'Kaj zate pomeni "pospravljeno"? Opiši.', type:'text'},
+ ]},
+ {t:'C. Kuhinja in hrana', q:[
+  {id:'kuha', t:'Kdo naj kuha med tednom in kako se to določi?', type:'text'},
+  {id:'vecerja', t:'Kolikokrat na teden naj imamo skupno večerjo/kosilo?', type:'radio', o:['Vsak dan','4–6-krat','1–3-krat','Ni mi pomembno']},
+  {id:'telefon_miza', t:'Telefoni pri mizi?', type:'radio', o:['Nikoli','Samo, če je nujno','Naj ne bo pravila']},
+  {id:'po_jedi', t:'Kdo pospravi po jedi?', type:'radio', o:['Vsak svoje','Kdor ni kuhal','Po rotaciji','Vedno isti (tako kot zdaj)']},
+ ]},
+ {t:'D. Skupni čas', q:[
+  {id:'skupni', t:'Koliko skupnih družinskih večerov ali izletov na mesec bi si želel/a?', type:'radio', o:['0','1','2','4 ali več']},
+  {id:'poceti', t:'Kaj bi rad/a počel/a skupaj z družino?', type:'text'},
+  {id:'skupni_zdaj', t:'Koliko skupnega časa imamo zdaj?', type:'scale', lo:'premalo', hi:'preveč'},
+ ]},
+ {t:'E. Odnosi in komunikacija', q:[
+  {id:'prizadene', t:'Kaj te v prepirih najbolj prizadene?', type:'check', o:['Kričanje','Žaljivke','Ignoriranje / molk','Nepravičnost','Prekinjanje','Vpletanje starih zamer','Loputanje z vrati','Da nihče ne prizna napake']},
+  {id:'konflikti', t:'Kako naj rešujemo konflikte?', type:'check', o:['Takoj se pogovorimo','Najprej se ohladimo, potem pogovor','Družinski sestanek','Pogovor na štiri oči','Opravičilo, ko kdo naredi napako','Brez kaznovanja, z dogovorom']},
+  {id:'slisan', t:'Kako se počutiš slišan/a v naši družini?', type:'scale', lo:'sploh ne', hi:'popolnoma'},
+  {id:'vec_besede', t:'Pri katerih odločitvah bi rad/a imel/a več besede?', type:'text'},
+  {id:'spostovanje', t:'Kaj zate pomeni, da te drugi spoštujejo?', type:'text'},
+ ]},
+ {t:'F. Zasebnost in prostor', q:[
+  {id:'trkanje', t:'Trkanje pred vstopom v sobo?', type:'radio', o:['Vedno','Samo pri zaprtih vratih','Ni potrebno']},
+  {id:'tisina', t:'Od katere ure naj bo doma tišina?', type:'radio', o:['21:00','22:00','23:00','Ni pravila']},
+  {id:'zasebno', t:'Kaj je zate osebno in se drugih ne tiče?', type:'text'},
+ ]},
+ {t:'G. Zasloni in denar', q:[
+  {id:'zasloni', t:'Naj imamo pravila glede telefonov in zaslonov?', type:'radio', o:['Ne, vsak sam odloča','Samo pri mizi','Pri mizi in ponoči','Po dogovoru za vsakega posebej']},
+  {id:'denar', t:'Kaj misliš o denarju v družini (žepnina, skupni stroški, kdo kaj plača)?', type:'text'},
+ ]},
+ {t:'H. Dogovor in sestanki', q:[
+  {id:'posledica', t:'Kaj naj se zgodi, če nekdo ne drži dogovora?', type:'radio', o:['Prijazen opomin','Dodatno opravilo','Pogovor na sestanku','Nič – zaupamo si','Nekaj drugega (napiši spodaj)']},
+  {id:'sestanek', t:'Kako pogosto naj imamo družinski sestanek?', type:'radio', o:['Tedensko','Na 14 dni','Mesečno','Po potrebi']},
+  {id:'podpis', t:'Bi podpisal/a družinski kodeks?', type:'radio', o:['Da','Verjetno','Ne vem','Ne']},
+  {id:'sporocilo', t:'Sporočilo družini (kar koli bi rad/a povedal/a).', type:'text'},
+ ]},
+];
+const ALLQ = SECTIONS.flatMap(s=>s.q);
+
+// ---------- pomožno ----------
+const $ = s=>document.querySelector(s);
+const LS = {get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+            set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+            del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+async function hash(s){const b=new TextEncoder().encode('kodeks:'+s);const h=await crypto.subtle.digest('SHA-256',b);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let me=null, answers={};
+
+// ---------- prijava ----------
+let selected=null;
+function renderPeople(){
+  $('#people').innerHTML = PEOPLE.map(p=>`<div class="person" data-id="${p.id}"><div style="font-size:1.8rem">${p.emoji}</div><div class="n">${p.name}</div><div class="a">${p.age} let</div></div>`).join('');
+  document.querySelectorAll('.person').forEach(el=>el.onclick=()=>{
+    selected = PEOPLE.find(p=>p.id===el.dataset.id);
+    document.querySelectorAll('.person').forEach(x=>x.classList.toggle('sel',x===el));
+    const has = !!LS.get('pin_'+selected.id);
+    $('#pinbox').classList.remove('hidden');
+    $('#pin2').classList.toggle('hidden',has);
+    $('#pinlabel').textContent = has ? `PIN za ${selected.name}` : `${selected.name}, izberi si PIN (4 številke) – še nimaš PIN-a na tej napravi`;
+    $('#loginMsg').innerHTML=''; $('#pin1').value=''; $('#pin2').value=''; $('#pin1').focus();
+  });
+}
+$('#loginBtn').onclick = async ()=>{
+  if(!selected) return;
+  const p1=$('#pin1').value.trim(), p2=$('#pin2').value.trim();
+  if(!/^\d{4}$/.test(p1)){ $('#loginMsg').innerHTML='<div class="msg warn">PIN mora imeti 4 številke.</div>'; return; }
+  const saved = LS.get('pin_'+selected.id);
+  if(!saved){
+    if(p1!==p2){ $('#loginMsg').innerHTML='<div class="msg warn">PIN-a se ne ujemata.</div>'; return; }
+    LS.set('pin_'+selected.id, await hash(p1));
+  } else if(saved !== await hash(p1)){
+    $('#loginMsg').innerHTML='<div class="msg warn">Napačen PIN.</div>'; return;
+  }
+  login(selected);
+};
+['#pin1','#pin2'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')$('#loginBtn').click()}));
+
+function login(p){
+  me=p; answers = LS.get('ans_'+me.id, {});
+  LS.set('last_user', me.id);
+  $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+  $('#who').innerHTML = `<span>${me.emoji} ${me.name} (${me.age})</span><button id="logout">Odjava</button>`;
+  $('#logout').onclick=()=>{ me=null; LS.del('last_user'); $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); };
+  renderForm(); updateProgress();
+}
+
+// ---------- vprašalnik ----------
+function renderForm(){
+  let n=0, html='';
+  for(const s of SECTIONS){
+    html += `<h3>${s.t}</h3>`;
+    for(const q of s.q){
+      n++;
+      html += `<label class="q">${n}. ${q.t}</label>`;
+      if(q.max) html += `<div class="hint">Izberi največ ${q.max}.</div>`;
+      const v = answers[q.id];
+      if(q.type==='text'){
+        html += `<textarea data-q="${q.id}">${v?esc(v):''}</textarea>`;
+      } else if(q.type==='radio'){
+        html += `<div class="opts">`+q.o.map(o=>`<label class="opt"><input type="radio" name="${q.id}" value="${esc(o)}" ${v===o?'checked':''}>${o}</label>`).join('')+`</div>`;
+      } else if(q.type==='check'){
+        const arr = Array.isArray(v)?v:[];
+        html += `<div class="opts inline">`+q.o.map(o=>`<label class="opt"><input type="checkbox" name="${q.id}" value="${esc(o)}" ${arr.includes(o)?'checked':''}>${o}</label>`).join('')+`</div>`;
+      } else if(q.type==='scale'){
+        html += `<div class="scale">`+[1,2,3,4,5].map(i=>`<label class="opt"><input type="radio" name="${q.id}" value="${i}" ${String(v)===String(i)?'checked':''}>${i}</label>`).join('')+`</div><div class="scale-lbl"><span>1 = ${q.lo}</span><span>5 = ${q.hi}</span></div>`;
+      }
+    }
+  }
+  $('#form').innerHTML = html;
+  $('#form').addEventListener('input', onChange);
+  $('#form').addEventListener('change', onChange);
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function onChange(e){
+  const el=e.target; const id = el.dataset.q || el.name; const q=ALLQ.find(x=>x.id===id); if(!q) return;
+  if(q.type==='text') answers[id]=el.value;
+  else if(q.type==='check'){
+    let arr=[...document.querySelectorAll(`input[name="${id}"]:checked`)].map(x=>x.value);
+    if(q.max && arr.length>q.max){ el.checked=false; arr=arr.filter(x=>x!==el.value); }
+    answers[id]=arr;
+  } else answers[id]=el.value;
+  answers._updated = new Date().toISOString();
+  LS.set('ans_'+me.id, answers); updateProgress();
+}
+function answered(a,q){const v=a[q.id]; return Array.isArray(v)?v.length>0:(v!==undefined&&String(v).trim()!=='')}
+function updateProgress(){
+  const done = ALLQ.filter(q=>answered(answers,q)).length, pct=Math.round(done/ALLQ.length*100);
+  $('#barfill').style.width=pct+'%'; $('#bartxt').textContent=`${done} / ${ALLQ.length} odgovorov (${pct} %)`;
+}
+
+// ---------- oddaja ----------
+function fmt(v){return Array.isArray(v)?v.join(', '):(v??'')}
+function payload(){ return {kodeks:1, id:me.id, name:me.name, age:me.age, date:new Date().toISOString().slice(0,10), answers:Object.fromEntries(ALLQ.map(q=>[q.id,answers[q.id]??'']))}; }
+function asText(){
+  let n=0, out=`DRUŽINSKI KODEKS – odgovori: ${me.name} (${me.age}), ${new Date().toLocaleDateString('sl-SI')}\n\n`;
+  for(const s of SECTIONS){ out+=`== ${s.t} ==\n`; for(const q of s.q){ n++; out+=`${n}. ${q.t}\n   → ${fmt(answers[q.id])||'—'}\n`; } out+='\n'; }
+  out += `--- Za pregled na spletni strani prilepi ta blok: ---\n`+JSON.stringify(payload());
+  return out;
+}
+function checkDone(){
+  const missing = ALLQ.filter(q=>!answered(answers,q)).length;
+  $('#submitMsg').innerHTML = missing ? `<div class="msg warn">Neodgovorjenih vprašanj: ${missing}. Lahko oddaš tudi tako, a bolje je, če odgovoriš na vsa.</div>` : `<div class="msg">Vsa vprašanja so odgovorjena. 🎉</div>`;
+}
+$('#mailBtn').onclick=()=>{ checkDone(); const s=`Družinski kodeks – odgovori: ${me.name}`; location.href=`mailto:${MAIL_TO}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(asText())}`; };
+$('#copyBtn').onclick=async()=>{ checkDone(); try{ await navigator.clipboard.writeText(asText()); $('#submitMsg').innerHTML+='<div class="msg">Odgovori so kopirani. Prilepi jih v e-pošto ali sporočilo Alešu.</div>'; }catch(e){ prompt('Kopiraj besedilo:', asText()); } };
+$('#dlBtn').onclick=()=>{ checkDone(); const b=new Blob([asText()],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`kodeks-${me.id}.txt`; a.click(); };
+$('#clearBtn').onclick=()=>{ if(confirm('Res želiš izbrisati vse svoje odgovore na tej napravi?')){ answers={}; LS.del('ans_'+me.id); renderForm(); updateProgress(); } };
+
+// ---------- pregled ----------
+function collect(){
+  const all = {};
+  for(const p of PEOPLE){ const a=LS.get('ans_'+p.id); if(a && Object.keys(a).some(k=>k!=='_updated')) all[p.id]={name:p.name,age:p.age,answers:a,src:'ta naprava'}; }
+  const imported = LS.get('imported',{});
+  for(const [id,v] of Object.entries(imported)) all[id]=v;
+  return all;
+}
+function renderReview(){
+  const all=collect(); const ids=PEOPLE.map(p=>p.id).filter(id=>all[id]);
+  if(!ids.length){ $('#reviewTable').innerHTML='<p class="lead">Ni še nobenih odgovorov.</p>'; return; }
+  let n=0, html=`<table><thead><tr><th>Vprašanje</th>${ids.map(id=>`<th>${all[id].name} (${all[id].age})<br><small style="font-weight:400;color:var(--muted)">${all[id].src||''}</small></th>`).join('')}</tr></thead><tbody>`;
+  for(const s of SECTIONS){ html+=`<tr><td colspan="${ids.length+1}" style="background:var(--soft);font-weight:700">${s.t}</td></tr>`;
+    for(const q of s.q){ n++; html+=`<tr><td class="q">${n}. ${q.t}</td>${ids.map(id=>`<td>${esc(fmt(all[id].answers[q.id]))||'<span style="color:var(--muted)">—</span>'}</td>`).join('')}</tr>`; } }
+  html+='</tbody></table>';
+  $('#reviewTable').innerHTML=html;
+}
+$('#pasteBtn').onclick=()=>{
+  const txt=$('#pasteBox').value; const m=txt.match(/\{"kodeks"[\s\S]*\}/); 
+  if(!m){ $('#reviewMsg').innerHTML='<div class="msg warn">V prilepljenem besedilu ni bloka odgovorov.</div>'; return; }
+  try{ const d=JSON.parse(m[0]); const imp=LS.get('imported',{}); imp[d.id]={name:d.name,age:d.age,answers:d.answers,src:'uvoženo '+d.date}; LS.set('imported',imp);
+    $('#reviewMsg').innerHTML=`<div class="msg">Dodani odgovori: ${d.name}.</div>`; $('#pasteBox').value=''; renderReview(); }
+  catch(e){ $('#reviewMsg').innerHTML='<div class="msg warn">Bloka ni bilo mogoče prebrati.</div>'; }
+};
+$('#refreshBtn').onclick=renderReview;
+
+// ---------- zavihki ----------
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['form','review','about'].forEach(t=>$('#tab-'+t).classList.toggle('hidden',t!==b.dataset.tab));
+  if(b.dataset.tab==='review') renderReview();
+});
+
+// ---------- zagon ----------
+renderPeople();
+const last=LS.get('last_user'); if(last){ const p=PEOPLE.find(x=>x.id===last); if(p) login(p); }
+</script>
+</body>
+</html>
